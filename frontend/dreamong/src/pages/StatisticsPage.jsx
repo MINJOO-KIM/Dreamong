@@ -3,22 +3,31 @@ import { useRecoilValue } from 'recoil';
 import { baseURLState, userState } from '../recoil/atoms';
 import axios from 'axios';
 import { Chart, registerables } from 'chart.js';
+import StatisticsSkeletonPage from './SkeletonPage/StatisticsSkeletonPage';
+
 Chart.register(...registerables);
+
 const StatisticsPage = () => {
   const user = useRecoilValue(userState);
   const baseURL = useRecoilValue(baseURLState);
   const nickname = user.nickname;
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
+
   const [year, setYear] = useState(currentYear);
   const [month, setMonth] = useState(currentMonth);
   const [currentDate, setCurrentDate] = useState(`${currentYear}${String(currentMonth).padStart(2, '0')}`);
+
   const [objects, setObjects] = useState([]);
   const [characters, setCharacters] = useState([]);
   const [locations, setLocations] = useState([]);
   const [moods, setMoods] = useState([]);
   const [dreamTypeCounts, setDreamTypeCounts] = useState([]);
+
   const chartRef = useRef(null);
+
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     fetchStatistics();
   }, [currentDate]);
@@ -42,12 +51,14 @@ const StatisticsPage = () => {
   };
   const fetchStatistics = async () => {
     try {
+      // await new Promise((resolve) => setTimeout(resolve, 2000));
       const accessToken = localStorage.getItem('accessToken');
       const response = await axios.get(`${baseURL}/statistics/${user.userId}/${currentDate}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       const statistics = response.data.data;
-      console.log(statistics);
+      // console.log(statistics);
+      console.log(isLoading);
       setObjects(statistics.objects || []);
       setCharacters(statistics.characters || []);
       setLocations(statistics.locations || []);
@@ -55,8 +66,11 @@ const StatisticsPage = () => {
       setDreamTypeCounts(statistics.dreamTypeCounts || []);
     } catch (error) {
       console.error('Error fetching statistics:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
   const renderChart = () => {
     const ctx = chartRef.current.getContext('2d');
 
@@ -98,6 +112,7 @@ const StatisticsPage = () => {
       },
     });
   };
+
   return (
     <div className="flex h-full w-full flex-col items-center justify-center bg-[#3a3a3a]">
       <div className="flex h-full w-full max-w-md flex-col items-center justify-start bg-[#3a3a3a]">
@@ -143,92 +158,98 @@ const StatisticsPage = () => {
           </label>
         </div>
       </div>
-      <div className="m-8">
-        {/* 사물 */}
-        <div className="h-82 flex w-full flex-col justify-center gap-2 rounded-3xl border-black bg-[#0000007c] p-6">
-          <div className="m-1 text-center text-white">이번달의 키워드는 무엇일까요?</div>
-          {objects.length > 0 ? (
-            objects.map((object, index) => (
-              <div key={index} className="">
-                <div className="bg-tag-gradient h-full w-full rounded-3xl border-black p-4">
-                  <div className="flex">
-                    <p>{index + 1}위 </p>
-                    <p className="px-2 font-bold">{object.word}</p>
+      {isLoading ? (
+        <StatisticsSkeletonPage />
+      ) : (
+        <div className="m-8">
+          {/* 사물 */}
+          <div className="h-82 flex w-full flex-col justify-center gap-2 rounded-3xl border-black bg-[#0000007c] p-6">
+            <div className="m-1 text-center text-white">이번달의 키워드는 무엇일까요?</div>
+            {objects.length > 0 ? (
+              objects.map((object, index) => (
+                <div key={index} className="">
+                  <div className="h-full w-full rounded-3xl border-black bg-tag-gradient p-4">
+                    <div className="flex">
+                      <p>{index + 1}위 </p>
+                      <p className="px-2 font-bold">{object.word}</p>
+                    </div>
+                    <p className="text-sm font-bold text-[#9CA1E1]">{object.hashTags.join(' ')}</p>
                   </div>
-                  <p className="text-sm font-bold text-[#9CA1E1]">{object.hashTags.join(' ')}</p>
                 </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-400">이번달에 분석된 키워드가 없습니다.</p>
-          )}
-        </div>
+              ))
+            ) : (
+              <p className="text-center text-gray-400">이번달에 분석된 키워드가 없습니다.</p>
+            )}
+          </div>
 
-        <div className="mt-6 flex w-full justify-between">
-          {/* 인물 */}
-          <div className="h-40 w-40 rounded-3xl bg-[#E3DEFF]">
-            <p className="text-md mb-4 mt-6 text-center">누가 자주 나왔을까요?</p>
-            {characters.length > 0 ? (
-              characters.map((character, index) => (
-                <div key={index} className="text-center text-sm text-black">
-                  <div className="flex justify-center align-middle">
-                    <p>{index + 1}위</p>
-                    <p className="px-2 font-bold">{character.word}</p>
+          <div className="mt-6 flex w-full justify-between">
+            {/* 인물 */}
+            <div className="h-40 w-40 rounded-3xl bg-[#E3DEFF]">
+              <p className="text-md mb-4 mt-6 text-center">누가 자주 나왔을까요?</p>
+              {characters.length > 0 ? (
+                characters.map((character, index) => (
+                  <div key={index} className="text-center text-sm text-black">
+                    <div className="flex justify-center align-middle">
+                      <p>{index + 1}위</p>
+                      <p className="px-2 font-bold">{character.word}</p>
+                    </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-bold mt-3 items-center text-center text-gray-500">
-                이번달에 분석된 <br />
-                키워드가 없습니다.
-              </p>
-            )}
-          </div>
-          {/* 장소 */}
-          <div className="h-40 w-40 rounded-3xl bg-[#36258D] text-center">
-            <p className="text-md mb-4 mt-6 text-white">자주 간 장소예요!</p>
-            {locations.length > 0 ? (
-              locations.map((location, index) => (
-                <div key={index} className="text-sm text-white">
-                  <div className="flex justify-center align-middle">
-                    <p className="text-center">{index + 1}위</p>
-                    <p className="px-2 font-bold">{location.word}</p>
+                ))
+              ) : (
+                <p className="text-bold mt-3 items-center text-center text-gray-500">
+                  이번달에 분석된 <br />
+                  키워드가 없습니다.
+                </p>
+              )}
+            </div>
+            {/* 장소 */}
+            <div className="h-40 w-40 rounded-3xl bg-[#36258D] text-center">
+              <p className="text-md mb-4 mt-6 text-white">자주 간 장소예요!</p>
+              {locations.length > 0 ? (
+                locations.map((location, index) => (
+                  <div key={index} className="text-sm text-white">
+                    <div className="flex justify-center align-middle">
+                      <p className="text-center">{index + 1}위</p>
+                      <p className="px-2 font-bold">{location.word}</p>
+                    </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-bold mt-3 items-center text-center text-gray-500">
-                이번달에 분석된 <br />
-                키워드가 없습니다.
-              </p>
-            )}
+                ))
+              ) : (
+                <p className="text-bold mt-3 items-center text-center text-gray-500">
+                  이번달에 분석된 <br />
+                  키워드가 없습니다.
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-        {/* 기분 */}
-        <div className="mt-6 flex min-h-48 w-full flex-col items-center justify-center gap-2.5 rounded-3xl bg-[white] p-6">
-          <div className="mb-">이번달에 느낀 감정이에요</div>
-          <div className="flex flex-wrap justify-center">
-            {moods.length > 0 ? (
-              moods.slice(0, 10).map((mood, index) => (
-                <div key={index} className="bg-tag-gradient mx-1 my-2 flex rounded-3xl px-4 py-2 shadow-md">
-                  <div className="flex w-full justify-center align-middle">{mood.word}</div>
-                </div>
-              ))
-            ) : (
-              <p className="text-bold mt-3 items-center text-center text-gray-500">
-                이번달에 분석된 <br />
-                키워드가 없습니다.
-              </p>
-            )}
+          {/* 기분 */}
+          <div className="mt-6 flex min-h-48 w-full flex-col items-center justify-center gap-2.5 rounded-3xl bg-[white] p-6">
+            <div className="mb-">이번달에 느낀 감정이에요</div>
+            <div className="flex flex-wrap justify-center">
+              {moods.length > 0 ? (
+                moods.slice(0, 10).map((mood, index) => (
+                  <div key={index} className="mx-1 my-2 flex rounded-3xl bg-tag-gradient px-4 py-2 shadow-md">
+                    <div className="flex w-full justify-center align-middle">{mood.word}</div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-bold mt-3 items-center text-center text-gray-500">
+                  이번달에 분석된 <br />
+                  키워드가 없습니다.
+                </p>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* 꿈종류 그래프 */}
-        <div className="relative mt-6 flex h-64 w-full items-end justify-center gap-4 rounded-3xl bg-[white] p-2.5">
-          <div className="text-md absolute left-1/2 top-2 mt-4 -translate-x-1/2 transform">이번달에 꾼 꿈 종류예요</div>
-          <canvas ref={chartRef} className="mb-4 h-full w-full" />
+          {/* 꿈종류 그래프 */}
+          <div className="relative mt-6 flex h-64 w-full items-end justify-center gap-4 rounded-3xl bg-[white] p-2.5">
+            <div className="text-md absolute left-1/2 top-2 mt-4 -translate-x-1/2 transform">
+              이번달에 꾼 꿈 종류예요
+            </div>
+            <canvas ref={chartRef} className="mb-4 h-full w-full" />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

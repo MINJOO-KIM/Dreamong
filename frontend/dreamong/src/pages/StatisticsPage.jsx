@@ -167,7 +167,7 @@ const StatisticsPage = () => {
             )}
           </div>
 
-          <div className="mt-6 flex w-full justify-evenly">
+          <div className="mt-6 flex w-full justify-around gap-x-4">
             {/* 인물 */}
             <div className="h-40 w-40 rounded-3xl bg-[#E3DEFF]">
               <p className="text-md mb-4 mt-6 text-center">누가 자주 나왔을까요?</p>
@@ -227,10 +227,8 @@ const StatisticsPage = () => {
           </div>
 
           {/* 꿈종류 그래프 */}
-          <div className="relative mt-6 flex h-64 w-full items-end justify-center gap-4 rounded-3xl bg-[white] p-2.5">
-            <div className="text-md absolute left-1/2 top-2 mt-4 -translate-x-1/2 transform">
-              이번달에 꾼 꿈 종류예요
-            </div>
+          <div className="h-70 mt-6 flex w-full flex-col justify-center gap-4 rounded-3xl bg-[white] p-2.5">
+            <div className="text-md mt-4 flex justify-center">이번달에 꾼 꿈 종류예요</div>
             <canvas ref={chartRef} className="mb-4 h-full w-full" />
           </div>
         </div>

@@ -167,7 +167,7 @@ const StatisticsPage = () => {
             )}
           </div>
 
-          <div className="mt-6 flex w-full justify-between">
+          <div className="mt-6 flex w-full justify-evenly">
             {/* 인물 */}
             <div className="h-40 w-40 rounded-3xl bg-[#E3DEFF]">
               <p className="text-md mb-4 mt-6 text-center">누가 자주 나왔을까요?</p>

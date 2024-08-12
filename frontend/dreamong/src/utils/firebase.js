@@ -82,7 +82,7 @@ export const unsubscribeFromTopic = async (token, topic) => {
       method: 'delete',
       url: `https://iid.googleapis.com/iid/v1/${token}/rel/topics/${topic}`,
       headers: {
-        Authorization: `key=${import.meta.env.VITE_FB_SERVER_KEY}`,
+        Authorization: `key=a0c20c2e459b5cc5334cdb3961a0be4edf51a16f`,
         'Content-Type': 'application/json',
       },
     });

@@ -121,15 +121,15 @@ const StatisticsPage = () => {
   };
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center bg-[#3a3a3a]">
-      <div className="flex h-full w-full max-w-md flex-col items-center justify-start bg-[#3a3a3a]">
+    <div className="flex h-full w-full flex-col justify-center bg-[#3a3a3a]">
+      <div className="flex h-full w-full max-w-md flex-col justify-start bg-[#3a3a3a]">
         {/* 안내 문구 */}
-        <div className="mr-10 mt-8 flex h-16 w-full flex-col items-end justify-start gap-1 text-lg text-white">
+        <div className="mx-8 mt-10 flex h-16 w-full flex-col gap-1 text-xl text-white">
           <p>{nickname}님의 꿈 속에서</p>
           <p>일어난 일을 분석해봤어요</p>
         </div>
         {/* 월별 선택 */}
-        <div className="mt-4 flex items-center space-x-2">
+        <div className="mx-8 mt-4 flex space-x-2">
           <select
             value={yearMonth}
             onChange={handleYearMonthChange}

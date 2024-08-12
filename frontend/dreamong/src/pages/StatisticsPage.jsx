@@ -14,8 +14,7 @@ const StatisticsPage = () => {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
 
-  const [year, setYear] = useState(currentYear);
-  const [month, setMonth] = useState(currentMonth);
+  const [yearMonth, setYearMonth] = useState(`${currentYear}${String(currentMonth).padStart(2, '0')}`);
   const [currentDate, setCurrentDate] = useState(`${currentYear}${String(currentMonth).padStart(2, '0')}`);
 
   const [objects, setObjects] = useState([]);
@@ -31,24 +30,32 @@ const StatisticsPage = () => {
   useEffect(() => {
     fetchStatistics();
   }, [currentDate]);
+
   useEffect(() => {
     if (chartRef.current) {
       renderChart();
     }
   }, [dreamTypeCounts]);
-  const handleYearChange = (e) => {
-    const selectedYear = parseInt(e.target.value, 10);
-    if (selectedYear > currentYear || (selectedYear === currentYear && month > currentMonth)) {
-      setMonth(currentMonth);
+
+  const handleYearMonthChange = (e) => {
+    const selectedYearMonth = e.target.value;
+    setYearMonth(selectedYearMonth);
+    setCurrentDate(selectedYearMonth);
+  };
+
+  const generateYearMonthOptions = () => {
+    const options = [];
+    for (let y = currentYear - 5; y <= currentYear; y++) {
+      for (let m = 1; m <= 12; m++) {
+        if (y === currentYear && m > currentMonth) break;
+        const value = `${y}${String(m).padStart(2, '0')}`;
+        const label = `${y}년 ${String(m).padStart(2, '0')}월`;
+        options.push({ value, label });
+      }
     }
-    setYear(selectedYear);
-    setCurrentDate(`${selectedYear}${String(month).padStart(2, '0')}`);
+    return options;
   };
-  const handleMonthChange = (e) => {
-    const selectedMonth = parseInt(e.target.value, 10);
-    setMonth(selectedMonth);
-    setCurrentDate(`${year}${String(selectedMonth).padStart(2, '0')}`);
-  };
+
   const fetchStatistics = async () => {
     try {
       // await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -58,7 +65,7 @@ const StatisticsPage = () => {
       });
       const statistics = response.data.data;
       // console.log(statistics);
-      console.log(isLoading);
+      // console.log(isLoading);
       setObjects(statistics.objects || []);
       setCharacters(statistics.characters || []);
       setLocations(statistics.locations || []);
@@ -123,39 +130,17 @@ const StatisticsPage = () => {
         </div>
         {/* 월별 선택 */}
         <div className="mt-4 flex items-center space-x-2">
-          <label className="flex space-x-2">
-            <select
-              value={year}
-              onChange={handleYearChange}
-              className="rounded-md border border-[#3a3a3a] bg-[#3a3a3a] p-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              {Array.from({ length: 10 }, (_, i) => {
-                const optionYear = currentYear - 5 + i;
-                return (
-                  <option key={i} value={optionYear} disabled={optionYear > currentYear}>
-                    {optionYear}
-                  </option>
-                );
-              })}
-            </select>
-          </label>
-          <label className="flex items-center space-x-2">
-            <select
-              value={month}
-              onChange={handleMonthChange}
-              className="rounded-md border border-[#3a3a3a] bg-[#3a3a3a] p-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-              disabled={year === currentYear && month > currentMonth}
-            >
-              {Array.from({ length: 12 }, (_, i) => {
-                const optionMonth = i + 1;
-                return (
-                  <option key={i} value={optionMonth} disabled={year === currentYear && optionMonth > currentMonth}>
-                    {String(optionMonth).padStart(2, '0')}
-                  </option>
-                );
-              })}
-            </select>
-          </label>
+          <select
+            value={yearMonth}
+            onChange={handleYearMonthChange}
+            className="rounded-md border border-[#3a3a3a] bg-[#3a3a3a] p-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            {generateYearMonthOptions().map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
       {isLoading ? (

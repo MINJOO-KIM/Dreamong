@@ -32,7 +32,7 @@ const StatisticsPage = () => {
 
   useEffect(() => {
     fetchStatistics();
-  }, []);
+  }, [currentDate]);
 
   const fetchStatistics = async () => {
     if (!accessToken) {

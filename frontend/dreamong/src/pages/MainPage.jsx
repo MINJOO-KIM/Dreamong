@@ -17,6 +17,8 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 
+import { HeaderContent } from '../assets/icons';
+
 const MainPage = () => {
   // dreams : 꿈리스트 / year, month : 년월 /
   const current = new Date();
@@ -29,53 +31,45 @@ const MainPage = () => {
   // 월에 포커스를 맞추기 위해서
   const swiperRef = useRef(null);
   const baseURL = useRecoilValue(baseURLState);
-  const accessToken = localStorage.getItem('accessToken');
   const navigate = useNavigate();
   const handleError = useHandleError();
 
   /** - 데이터를 가져오는 함수, 날짜 변동에 따라 계속 호출되므로 함수로 처리 */
-  const getDreams = async () => {
-    try {
-      const response = await axios.get(`${baseURL}/dream/${user.userId}/${year}${String(month).padStart(2, '0')}01`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        params: {},
-      });
-      const responseData = response.data.data;
-      console.log(responseData);
-      setDreams(responseData.dreamMainResponsesList);
-      setTotalCount(responseData.totalCount);
-    } catch (err) {
-      console.log('mainerror:', err);
+  const accessToken = localStorage.getItem('accessToken');
+
+  const getDreams = () => {
+    if (!accessToken) {
+      return navigate('/login');
     }
+    axios
+      .get(`${baseURL}/users/info`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        withCredentials: true,
+      })
+      .then((response) => {
+        console.log('유저정보 가져왔어!', response);
+        setUser(response.data.data);
+        return axios.get(`${baseURL}/dream/${response.data.data.userId}/${year}${String(month).padStart(2, '0')}01`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+      })
+      .then((response) => {
+        const responseData = response.data.data;
+        setDreams(responseData.dreamMainResponsesList);
+        setTotalCount(responseData.totalCount);
+        console.log(responseData);
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 401) {
+          navigate('/login');
+        } else {
+          navigate('/error');
+        }
+      });
   };
 
   // useEffect
-  // dreams, totalCount 데이터 변경하기
-  // 새로고침시에 recoil 초기화되는 부분 갱신하기
-  const fetchData = async () => {
-    if (accessToken) {
-      try {
-        const response = await axios.get(`${baseURL}/users/info`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        console.log(response.data.data);
-        setUser(response.data.data);
-        swiperRef.current?.swiper.slideTo(month - 1, 0);
-        getDreams();
-        // 오류 발생시에는 로그인페이지로 이동
-      } catch {
-        handleError('/login');
-      }
-      // 토큰이 없을 경우에는 login 페이지로 이동
-    } else {
-      navigate('/login');
-    }
-  };
-
   useEffect(() => {
-    // Access Token의 존재 유무를 판단한다.
-    // 존재할 경우에는 recoil 갱신 후에 데이터 통신 실행
-    // fetchData();
     swiperRef.current?.swiper.slideTo(month - 1, 0);
     getDreams();
   }, []);
@@ -110,14 +104,15 @@ const MainPage = () => {
   const handleClick = (dreamId) => {
     navigate(`/dream/${dreamId}`);
   };
+
   // 통계 아이콘 선택시 통계 페이지로 이동
   const navigateToStatistics = () => {
     console.log(window.scrollY);
     navigate('/statistics');
   };
 
+  // 스크롤버튼의 화면 노출 관리
   const [isButtonVisible, setIsButtonVisible] = useState(true);
-
   const mainRef = useRef(null);
 
   // 버튼 노출 여부
@@ -144,6 +139,7 @@ const MainPage = () => {
       }
     };
   }, []);
+
   const ScrollToDiv = () => {
     // 참조된 div가 있으면 그 위치로 스크롤 이동
     if (mainRef.current) {
@@ -154,7 +150,7 @@ const MainPage = () => {
 
   return (
     <div className="relative h-dvh">
-      <header className="inline-flex h-[800px] w-full flex-col items-center justify-center gap-2.5 text-center text-white transition delay-150 ease-in-out">
+      <header className="inline-flex h-[700px] w-full flex-col items-center justify-center gap-2.5 text-center text-white transition delay-150 ease-in-out">
         {/* 닉네임 여부에 따라 다르게 표시 */}
         <p className="text-3xl font-bold">안녕하세요{user.nickname ? `, ${user.nickname}님!` : '!'}</p>
         {/* 꿈 작성 개수에 따라 다르게 표시 */}
@@ -254,3 +250,5 @@ const MainPage = () => {
 };
 
 export default MainPage;
+
+// readme 정리할 때 애초에 예시로 이미지 넣을거 지금 완성이 안되어있으니까 이미지 넣을 칸만 예시파일 하나 넣어놓고 @![]()

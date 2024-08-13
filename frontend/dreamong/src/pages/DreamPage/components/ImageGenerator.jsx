@@ -19,6 +19,7 @@ import imgGenerator from '../../../assets/img_generator.png';
  * - 검열이미지 대체할 요소 고려 필요!
  */
 const ImageGenerator = ({ MIN_LENGTH, classList, content, image, setImage }) => {
+  const accessToken = localStorage.getItem('accessToken');
   const baseURL = useRecoilValue(baseURLState);
   const handleError = useHandleError();
 
@@ -43,7 +44,6 @@ const ImageGenerator = ({ MIN_LENGTH, classList, content, image, setImage }) => 
       const requestData = {
         prompt: content,
       };
-      const accessToken = localStorage.getItem('accessToken');
       const response = await axios.post(`${baseURL}/api/generate-image`, requestData, {
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json; charset=UTF-8' },
       });
@@ -55,28 +55,28 @@ const ImageGenerator = ({ MIN_LENGTH, classList, content, image, setImage }) => 
       }
       // 생성된 이미지 선택지 제공
       setOptions(censoredOptions);
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error);
       setImage(null);
       setIsGenerating(false);
       setOptions(null);
-      Swal.fire({
-        icon: 'error',
-        text: '오류가 발생했습니다. 다시 시도해주세요.',
-      });
+      if (error.response && error.response.status === 401) {
+        navigate('/login');
+      } else {
+        Swal.fire({
+          icon: 'error',
+          text: '오류가 발생했습니다. 이미지를 다시 생성해주세요.',
+        });
+      }
     }
   }
 
   // 이미지 재생성 버튼, 기존의 이미지와 선택지들 초기화한 후에 생성
   async function imgRegenerator() {
-    try {
-      setImage(null);
-      setOptions(null);
-      setSelected(null);
-      await handleImgGenerator();
-    } catch {
-      handleError();
-    }
+    setImage(null);
+    setOptions(null);
+    setSelected(null);
+    await handleImgGenerator();
   }
 
   const handleSelected = (i) => {
@@ -112,7 +112,7 @@ const ImageGenerator = ({ MIN_LENGTH, classList, content, image, setImage }) => 
   if (options) {
     return (
       <div className={`${classList}`}>
-        <p className="my-3 text-center text-lg">그림을 선택하세요</p>
+        <p className="my-3 text-center text-xl font-bold">그림을 선택하세요</p>
         <div className="grid grid-cols-2">
           {options.map((img, idx) => (
             <div

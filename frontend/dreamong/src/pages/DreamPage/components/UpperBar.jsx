@@ -67,7 +67,11 @@ const UpperBar = ({ content = '', image = '', interpretation = '', date = '', dr
             navigate('/');
           }, 500);
         } catch (error) {
-          handleError('/login');
+          if (error.response && error.response.status === 401) {
+            navigate('/login');
+          } else {
+            navigate('/error');
+          }
         }
       }
     }
@@ -95,9 +99,12 @@ const UpperBar = ({ content = '', image = '', interpretation = '', date = '', dr
         console.log(response);
         navigate('/');
       }
-    } catch (err) {
-      console.log(err);
-      handleError();
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        navigate('/login');
+      } else {
+        navigate('/error');
+      }
     }
   };
 

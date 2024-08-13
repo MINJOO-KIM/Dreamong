@@ -36,8 +36,9 @@ const DreamRegisterPage = () => {
   const classList = 'my-2 p-3 bg-black bg-opacity-50 rounded-lg';
 
   // recoil atoms
-  const user = useRecoilValue(userState);
+  const [user, setUser] = useRecoilState(userState);
   const baseURL = useRecoilValue(baseURLState);
+  const accessToken = localStorage.getItem('accessToken');
 
   // 꿈 등록을 위해 필요한 데이터
   const [content, setContent] = useState('');
@@ -71,9 +72,26 @@ const DreamRegisterPage = () => {
 
   /** 초기 렌더링시에 accessToken 존재 유무 파악 후 없으면 redirect to login page*/
   useEffect(() => {
-    if (!localStorage.getItem('accessToken')) {
+    if (!accessToken) {
       navigate('/login');
     }
+    axios
+      .get(`${baseURL}/users/info`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        withCredentials: true,
+      })
+      .then((response) => {
+        // console.log('유저정보 가져왔어!', response);
+        setUser(response.data.data);
+      })
+      .catch((error) => {
+        console.log(error);
+        if (error.response && error.response.status === 401) {
+          navigate('/login');
+        } else {
+          handleError('/');
+        }
+      });
   }, []);
 
   // 이미지를 새로 만들때에 공유하기 갱신
@@ -89,6 +107,7 @@ const DreamRegisterPage = () => {
       if (isSaving) {
         return;
       }
+
       if (content.replace(/ /g, '') == '') {
         Swal.fire({
           title: 'ERROR',
@@ -108,9 +127,8 @@ const DreamRegisterPage = () => {
       }
 
       // 유효성 통과 후 저장 시작
+      if (isSaving) return;
       setIsSaving(true);
-
-      const accessToken = localStorage.getItem('accessToken');
       const response = await axios.post(
         `${baseURL}/dream/create`,
         {
@@ -127,20 +145,32 @@ const DreamRegisterPage = () => {
       );
       console.log(response.data);
       navigate('/');
-    } catch (err) {
+    } catch (error) {
       console.log(err);
       setIsSaving(false);
-      handleError('');
+      if (error.response && error.response.status === 401) {
+        navigate('/login');
+      } else {
+        navigate('/error');
+      }
+    }
+  };
+  const mainRef = useRef(null);
+  const ScrollToDiv = () => {
+    // 참조된 div가 있으면 그 위치로 스크롤 이동
+    if (mainRef.current) {
+      mainRef.current.scrollIntoView({ behavior: 'smooth' });
+      console.log(window.scrollY);
     }
   };
 
   return (
-    <div className="relative flex min-h-dvh flex-col px-6 py-3 text-white" style={{ minheight: '100vh' }}>
+    <div ref={mainRef} className="relative flex min-h-dvh flex-col px-6 py-3 text-white" style={{ minheight: '100vh' }}>
       {/* 음성인식 여부에 따른 animation */}
       {isListening ? SttWaveBar : null}
 
       {/* 저장 중 loading page */}
-      {/* {!isSaving ? SaveBar : null} */}
+      {isSaving ? SaveBar : null}
 
       <UpperBar content={content} image={image} interpretation={interpretation} date={date} mode={'save'} />
       <DatePicker date={date} setDate={setDate} replaceDateType={replaceDateType} />
@@ -167,6 +197,9 @@ const DreamRegisterPage = () => {
         image={image}
         setImage={setImage}
       />
+      <p className="px-2 pb-2 pt-1 text-center text-[12px]">
+        드리-몽도 실수할 수 있습니다. 이미지가 검열될 수 있습니다.
+      </p>
       <ShareSettings isShared={isShared} setIsShared={setIsShared} interpretation={interpretation} image={image} />
 
       <div className="flex justify-center">

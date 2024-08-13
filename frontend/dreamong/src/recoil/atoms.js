@@ -12,7 +12,7 @@ export const isListeningState = atom({
 
 export const baseURLState = atom({
   key: 'baseURLState',
-  default: 'https://i11c106.p.ssafy.io/api',
+  default: 'http://localhost:8080',
 });
 
 export const socketURLState = atom({

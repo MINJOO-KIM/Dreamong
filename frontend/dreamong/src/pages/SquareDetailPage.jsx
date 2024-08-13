@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { useParams } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useRecoilValue, useRecoilState } from 'recoil';
 import { baseURLState, userState } from '../recoil/atoms';
 
 const SquareDetailPage = () => {
@@ -12,42 +12,59 @@ const SquareDetailPage = () => {
   const [content, setContent] = useState('');
   const [image, setImage] = useState('');
   const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState(''); 
+  const [newComment, setNewComment] = useState('');
   const baseURL = useRecoilValue(baseURLState);
-  const user = useRecoilValue(userState);
+  const [user, setUser] = useRecoilState(userState);
 
   useEffect(() => {
     fetchDreamDetail();
   }, []);
 
-  const fetchDreamDetail = async () => {
-    try {
-      const accessToken = localStorage.getItem('accessToken');
-      const response = await axios.get(`${baseURL}/square/${dreamId}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        params: { userId: user.userId },
-      });
-  
-      const data = response.data.data;
-  
-      // 백엔드 데이터에 liked 필드를 추가
-      const updatedComments = data.comments.map(comment => ({
-        ...comment,
-        liked: false // 초기에는 모든 댓글의 liked 상태를 false로 설정
-      }));
-  
-      setSummary(data.summary);
-      setContent(data.content);
-      setImage(data.image);
-      setComments(updatedComments);
-    } catch (error) {
-      Swal.fire({
-        title: 'ERROR',
-        text: '오류가 발생했습니다.',
-        icon: 'error',
-        confirmButtonText: '돌아가기',
-      });
+  ///////////////////////////////
+  const accessToken = localStorage.getItem('accessToken');
+  const navigate = useNavigate();
+
+  const fetchDreamDetail = () => {
+    // 토큰이 존재하지 않을 경우 로그인 페이지로 이동
+    if (!accessToken) {
+      console.error('토큰이 없습니다. 로그인 페이지로 이동합니다.');
+      return navigate('/login');
     }
+
+    // 유저정보 가져오기
+    axios
+      .get(`${baseURL}/users/info`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        withCredentials: true,
+      })
+      // 유저정보 가져와서 userState 갱신하기
+      .then((userInfoResponse) => {
+        console.log('유저정보 가져왔어!', userInfoResponse);
+        const userInfo = userInfoResponse.data.data;
+        setUser(userInfo);
+        // userInfo를 이용해 꿈 상세 정보 가져오기
+        return axios.get(`${baseURL}/square/${dreamId}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          params: { userId: userInfo.userId },
+        });
+      })
+      .then((dreamDetailResponse) => {
+        const data = dreamDetailResponse.data.data;
+        console.log(data);
+        const updatedComments = data.comments;
+        setSummary(data.summary);
+        setContent(data.content);
+        setImage(data.image);
+        setComments(updatedComments);
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 401) {
+          navigate('/login');
+        } else {
+          console.error('오류 발생:', error);
+          navigate('/error');
+        }
+      });
   };
 
   const handleToggleClick = () => {
@@ -62,9 +79,9 @@ const SquareDetailPage = () => {
         {},
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
-  
+
       // 좋아요 토글 로직
       setComments((prevComments) =>
         prevComments.map((comment) =>
@@ -72,12 +89,10 @@ const SquareDetailPage = () => {
             ? {
                 ...comment,
                 liked: response.data.status === 'like',
-                likesCount: response.data.status === 'like' 
-                  ? comment.likesCount + 1 
-                  : comment.likesCount - 1,
+                likesCount: response.data.status === 'like' ? comment.likesCount + 1 : comment.likesCount - 1,
               }
-            : comment
-        )
+            : comment,
+        ),
       );
     } catch (error) {
       Swal.fire({
@@ -105,11 +120,11 @@ const SquareDetailPage = () => {
         },
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
-      
+
       if (response.data.status === 'success') {
-        fetchDreamDetail(); 
+        fetchDreamDetail();
         setNewComment('');
       } else {
         throw new Error(response.data.message);
@@ -137,9 +152,8 @@ const SquareDetailPage = () => {
           icon: 'success',
           confirmButtonText: '확인',
         });
-        fetchDreamDetail(); 
-      }
-      else{
+        fetchDreamDetail();
+      } else {
         throw new Error(response.data.message);
       }
     } catch (error) {
@@ -190,10 +204,8 @@ const SquareDetailPage = () => {
         {comments.map((comment) => (
           <div key={comment.id} className="flex items-center m-5">
             <div className="flex flex-col w-full ml-4">
-              <div className='flex items-center'>
-                <div className="text-base font-bold text-black">
-                  {comment.nickname}
-                </div>
+              <div className="flex items-center">
+                <div className="text-base font-bold text-black">{comment.nickname}</div>
                 {comment.commentOwner && (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -240,7 +252,7 @@ const SquareDetailPage = () => {
             value={newComment}
             onChange={handleCommentChange}
           />
-            <button className="w-12 h-12 p-3 mx-2 text-white bg-blue-500 rounded-2xl" onClick={handleCommentSubmit}>
+          <button className="w-12 h-12 p-3 mx-2 text-white bg-blue-500 rounded-2xl" onClick={handleCommentSubmit}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -251,7 +263,7 @@ const SquareDetailPage = () => {
             >
               <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z" />
             </svg>
-            </button>
+          </button>
         </div>
       </div>
     </div>

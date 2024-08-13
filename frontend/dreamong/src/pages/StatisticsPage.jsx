@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useRecoilValue } from 'recoil';
+import { useNavigate } from 'react-router-dom';
+import { useRecoilValue, useRecoilState } from 'recoil';
 import { baseURLState, userState } from '../recoil/atoms';
 import axios from 'axios';
 import { Chart, registerables } from 'chart.js';
@@ -8,9 +9,8 @@ import StatisticsSkeletonPage from './SkeletonPage/StatisticsSkeletonPage';
 Chart.register(...registerables);
 
 const StatisticsPage = () => {
-  const user = useRecoilValue(userState);
+  const [user, setUser] = useRecoilState(userState);
   const baseURL = useRecoilValue(baseURLState);
-  const nickname = user.nickname;
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
 
@@ -27,15 +27,54 @@ const StatisticsPage = () => {
 
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchStatistics();
-  }, [currentDate]);
+  const accessToken = localStorage.getItem('accessToken');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (chartRef.current) {
-      renderChart();
+    fetchStatistics();
+  }, []);
+
+  const fetchStatistics = async () => {
+    if (!accessToken) {
+      console.error('토큰이 없습니다. 로그인 페이지로 이동합니다.');
+      return navigate('/login');
     }
-  }, [dreamTypeCounts]);
+
+    // 유저정보 가져오기
+    axios
+      .get(`${baseURL}/users/info`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        withCredentials: true,
+      })
+      // 유저정보 가져와서 userState 갱신하기
+      .then((userInfoResponse) => {
+        console.log('유저정보 가져왔어!', userInfoResponse);
+        const userInfo = userInfoResponse.data.data;
+        setUser(userInfo);
+        return axios.get(`${baseURL}/statistics/${userInfo.userId}/${currentDate}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+      })
+      .then((response) => {
+        const statistics = response.data.data;
+        setObjects(statistics.objects || []);
+        setCharacters(statistics.characters || []);
+        setLocations(statistics.locations || []);
+        setMoods(statistics.moods || []);
+        setDreamTypeCounts(statistics.dreamTypeCounts || []);
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 401) {
+          navigate('/login');
+        } else {
+          console.error('오류 발생:', error);
+          navigate('/error');
+        }
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
 
   const handleYearMonthChange = (e) => {
     const selectedYearMonth = e.target.value;
@@ -56,27 +95,11 @@ const StatisticsPage = () => {
     return options;
   };
 
-  const fetchStatistics = async () => {
-    try {
-      // await new Promise((resolve) => setTimeout(resolve, 2000));
-      const accessToken = localStorage.getItem('accessToken');
-      const response = await axios.get(`${baseURL}/statistics/${user.userId}/${currentDate}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      const statistics = response.data.data;
-      // console.log(statistics);
-      // console.log(isLoading);
-      setObjects(statistics.objects || []);
-      setCharacters(statistics.characters || []);
-      setLocations(statistics.locations || []);
-      setMoods(statistics.moods || []);
-      setDreamTypeCounts(statistics.dreamTypeCounts || []);
-    } catch (error) {
-      console.error('Error fetching statistics:', error);
-    } finally {
-      setIsLoading(false);
+  useEffect(() => {
+    if (chartRef.current) {
+      renderChart();
     }
-  };
+  }, [dreamTypeCounts]);
 
   const renderChart = () => {
     const ctx = chartRef.current.getContext('2d');
@@ -125,7 +148,7 @@ const StatisticsPage = () => {
       <div className="flex h-full w-full max-w-md flex-col justify-start bg-[#3a3a3a]">
         {/* 안내 문구 */}
         <div className="mx-8 mt-10 flex h-16 w-full flex-col gap-1 text-xl text-white">
-          <p>{nickname}님의 꿈 속에서</p>
+          <p>{user.nickname}님의 꿈 속에서</p>
           <p>일어난 일을 분석해봤어요</p>
         </div>
         {/* 월별 선택 */}

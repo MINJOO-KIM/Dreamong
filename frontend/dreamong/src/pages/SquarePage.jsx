@@ -22,37 +22,40 @@ const SquarePage = () => {
     });
   };
 
+  const accessToken = localStorage.getItem('accessToken');
   useEffect(() => {
+    // 토큰이 없으면 로그인페이지로 이동
+    if (!accessToken) return navigate('/login');
+    // 토큰이 존재하면 fatchDreams 실행
     fetchDreams();
   }, []);
 
   const fetchDreams = async (cursorId = null, size = 10) => {
     try {
-      const accessToken = localStorage.getItem('accessToken');
-      const response = await axios.get(
-        `${baseURL}/square/dreams`,
-        {
-          params: {
-            cursorId: cursorId,
-            size: size,
-          },
+      const response = await axios.get(`${baseURL}/square/dreams`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        params: {
+          cursorId: cursorId,
+          size: size,
         },
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        },
-      );
+      });
       const newDreams = response.data.data;
-
       setDreams((prevDreams) => {
         const existingDreamIds = new Set(prevDreams.map((dream) => dream.dreamId));
         const uniqueDreams = newDreams.filter((dream) => !existingDreamIds.has(dream.dreamId));
         return [...prevDreams, ...uniqueDreams];
       });
-
       setHasMore(response.data.totalPages > page + 1);
       setPage((prevPage) => prevPage + 1);
     } catch {
-      handleError();
+      (error) => {
+        if (error.response && error.response.status === 401) {
+          navigate('/login');
+        } else {
+          console.error('오류 발생:', error);
+          navigate('/error');
+        }
+      };
     }
   };
 

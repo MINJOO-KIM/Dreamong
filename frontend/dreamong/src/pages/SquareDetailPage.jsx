@@ -173,7 +173,7 @@ const SquareDetailPage = () => {
   return (
     <div className="flex h-screen flex-col items-center justify-center bg-[#222222]">
       {/* 꿈 이미지 */}
-      <div className="mx-auto mb-4 mt-12 flex w-4/5">
+      <div className="flex w-4/5 mx-auto mt-12 mb-4">
         <div className="relative w-full pt-[100%]">
           <div
             className="absolute left-0 top-0 h-full w-full rounded-[30px] bg-gray-500"
@@ -190,15 +190,15 @@ const SquareDetailPage = () => {
           {isToggled ? (
             <div className="w-full text-left">
               {/* 요약 */}
-              <div className="mb-4 flex items-center gap-4">
-                <p className="whitespace-nowrap text-sm md:text-base lg:text-lg">요약: </p>
-                <p className="break-all text-sm md:text-base lg:text-lg">{summary}</p>
+              <div className="flex items-center gap-4 mb-4">
+                <p className="text-sm whitespace-nowrap md:text-base lg:text-lg">요약: </p>
+                <p className="text-sm break-all md:text-base lg:text-lg">{summary}</p>
               </div>
               <hr className="my-4 border-gray-700" />
-              <p className="break-all text-sm md:text-base lg:text-lg">{content}</p>
+              <p className="text-sm break-all md:text-base lg:text-lg">{content}</p>
             </div>
           ) : (
-            <span className="md:text-md text-sm lg:text-base">💡 어떤 꿈인지 궁금하시나요? 클릭해보세요!</span>
+            <span className="text-sm md:text-md lg:text-base">💡 어떤 꿈인지 궁금하시나요? 클릭해보세요!</span>
           )}
         </div>
       </div>
@@ -206,8 +206,8 @@ const SquareDetailPage = () => {
       {/* 꿈 댓글 */}
       <div className={`mt-4 ${isToggled ? 'max-h-60' : 'flex-grow'} w-full overflow-y-auto rounded-t-3xl bg-white p-4`}>
         {comments.map((comment) => (
-          <div key={comment.id} className="m-5 flex items-center">
-            <div className="ml-4 flex w-full flex-col">
+          <div key={comment.id} className="flex items-center m-5">
+            <div className="flex flex-col w-full ml-4">
               <div className="flex items-center">
                 <div className="text-base font-bold text-black">{comment.nickname}</div>
                 {comment.commentOwner && (
@@ -216,7 +216,7 @@ const SquareDetailPage = () => {
                     width="16"
                     height="16"
                     fill="currentColor"
-                    className="bi bi-trash3 ml-2 cursor-pointer text-gray-500 hover:text-red-500"
+                    className="ml-2 text-gray-500 cursor-pointer bi bi-trash3 hover:text-red-500"
                     viewBox="0 0 16 16"
                     onClick={() => handleDeleteComment(comment.id)}
                   >
@@ -228,7 +228,7 @@ const SquareDetailPage = () => {
             </div>
             <div className="flex flex-col items-center justify-center">
               <div
-                className="flex h-6 w-6 cursor-pointer items-center justify-center"
+                className="flex items-center justify-center w-6 h-6 cursor-pointer"
                 onClick={() => handleLikeClick(comment.id)}
               >
                 <svg
@@ -242,21 +242,21 @@ const SquareDetailPage = () => {
                   <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15" />
                 </svg>
               </div>
-              <div className="h-full w-10 text-center text-xs">{comment.likesCount}</div>
+              <div className="w-10 h-full text-xs text-center">{comment.likesCount}</div>
             </div>
           </div>
         ))}
         {/* 댓글 작성 */}
-        <div className="mt-4 flex items-center">
+        <div className="flex items-center mt-4">
           <textarea
             id="newComment"
             name="newComment"
-            className="h-12 w-full rounded-lg border p-2"
+            className="w-full h-12 p-2 border rounded-lg"
             placeholder="댓글을 입력하세요..."
             value={newComment}
             onChange={handleCommentChange}
           />
-          <button className="mx-2 h-12 w-12 rounded-2xl bg-blue-500 p-3 text-white" onClick={handleCommentSubmit}>
+          <button className="w-12 h-12 p-3 mx-2 text-white rounded-2xl bg-primary-500" onClick={handleCommentSubmit}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"

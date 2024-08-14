@@ -86,11 +86,11 @@ const DreamRegisterPage = () => {
       })
       .then((res) => {
         const responseData = res.data.data;
-        // if (responseData.userId != user.userId) {
-        //   console.log(responseData, 'user', user);
-        //   navigate('/');
-        //   return;
-        // }
+        if (responseData.userId != user.userId) {
+          console.log(responseData, 'user', user);
+          navigate('/');
+          return;
+        }
         setWriterId(responseData.userId);
         setContent(responseData.content);
         setImage(responseData.image);
@@ -156,22 +156,22 @@ const DreamRegisterPage = () => {
         return;
       }
 
-      // const dreamResponse = await axios.get(`${baseURL}/dream/${dreamId}`, {
-      //   headers: { Authorization: `Bearer ${accessToken}` },
-      //   withCredentials: true,
-      // });
+      const dreamResponse = await axios.get(`${baseURL}/dream/${dreamId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        withCredentials: true,
+      });
 
-      // const responseData = dreamResponse.data.data;
+      const responseData = dreamResponse.data.data;
 
       // 주석 처리된 권한 확인 부분
-      // if (writerId !== user.userId) {
-      //   await Swal.fire({
-      //     icon: 'error',
-      //     text: '글 수정 권한이 없습니다.',
-      //   });
-      //   navigate('/');
-      //   return;
-      // }
+      if (writerId !== user.userId) {
+        await Swal.fire({
+          icon: 'error',
+          text: '글 수정 권한이 없습니다.',
+        });
+        navigate('/');
+        return;
+      }
 
       // 업데이트 요청 실행
       const updateResponse = await axios.put(
@@ -186,6 +186,7 @@ const DreamRegisterPage = () => {
         },
         {
           headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json; charset=UTF-8' },
+          withCredentials: true,
         },
       );
 
@@ -248,6 +249,9 @@ const DreamRegisterPage = () => {
         image={image}
         setImage={setImage}
       />
+      <p className="px-2 pb-2 pt-1 text-center text-[12px]">
+        드리-몽도 실수할 수 있습니다. 이미지가 검열될 수 있습니다.
+      </p>
       <ShareSettings isShared={isShared} setIsShared={setIsShared} interpretation={interpretation} image={image} />
 
       <div className="flex justify-center">

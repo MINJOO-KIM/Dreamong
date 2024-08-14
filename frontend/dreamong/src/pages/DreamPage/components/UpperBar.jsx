@@ -62,6 +62,7 @@ const UpperBar = ({ content = '', image = '', interpretation = '', date = '', dr
           };
           axios.post(`${baseURL}/dream/temporary`, requestData, {
             headers: { Authorization: `Bearer ${accessToken}` },
+            withCredentials: true,
           });
           setTimeout(() => {
             navigate('/');
@@ -88,14 +89,10 @@ const UpperBar = ({ content = '', image = '', interpretation = '', date = '', dr
         denyButtonText: '취소',
       });
       if (confirmed) {
-        const requestData = {};
-        const response = await axios.delete(
-          `${baseURL}/dream/${dreamId}`,
-          {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          },
-          requestData,
-        );
+        const response = await axios.delete(`${baseURL}/dream/${dreamId}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          withCredentials: true,
+        });
         console.log(response);
         navigate('/');
       }

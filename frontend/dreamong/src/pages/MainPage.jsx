@@ -51,6 +51,7 @@ const MainPage = () => {
         setUser(response.data.data);
         return axios.get(`${baseURL}/dream/${response.data.data.userId}/${year}${String(month).padStart(2, '0')}01`, {
           headers: { Authorization: `Bearer ${accessToken}` },
+          withCredentials: true,
         });
       })
       .then((response) => {
@@ -101,7 +102,17 @@ const MainPage = () => {
     return date.toLocaleDateString('en-US', option).slice(0, 3).toUpperCase();
   };
 
+  const headerRef = useRef(null);
+  const ScrollToHeader = () => {
+    // 참조된 div가 있으면 그 위치로 스크롤 이동
+    if (headerRef.current) {
+      headerRef.current.scrollIntoView({ behavior: 'smooth' });
+      console.log(window.scrollY);
+    }
+  };
+
   const handleClick = (dreamId) => {
+    ScrollToHeader();
     navigate(`/dream/${dreamId}`);
   };
 
@@ -149,7 +160,7 @@ const MainPage = () => {
   };
 
   return (
-    <div className="relative h-dvh">
+    <div ref={headerRef} className="relative h-dvh">
       <header className="inline-flex h-[700px] w-full flex-col items-center justify-center gap-2.5 text-center text-white transition delay-150 ease-in-out">
         {/* 닉네임 여부에 따라 다르게 표시 */}
         <p className="text-3xl font-bold">안녕하세요{user.nickname ? `, ${user.nickname}님!` : '!'}</p>
@@ -224,12 +235,16 @@ const MainPage = () => {
                   </div>
                   <div
                     onClick={() => handleClick(dream.dreamId)}
-                    className={`flex w-3/4 items-start justify-between rounded-lg bg-black bg-opacity-30 p-2.5 text-white bg-blend-darken`}
-                    style={{
-                      backgroundImage: dream.image ? `url(${dream.image})` : 'url(/src/assets/test.jfif)',
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                    }}
+                    className={`flex w-3/4 items-start justify-between rounded-lg ${dream.image ? 'bg-black bg-opacity-30' : 'bg-primary-500 bg-opacity-70'} p-2.5 text-white bg-blend-darken`}
+                    style={
+                      dream.image
+                        ? {
+                            backgroundImage: `url(${dream.image})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                          }
+                        : null
+                    }
                   >
                     <div className="m-1 truncate">{dream.content}</div>
                   </div>

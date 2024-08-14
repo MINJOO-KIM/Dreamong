@@ -20,7 +20,6 @@ import censoredImage from '../../../assets/censoredImg.png';
  * - 검열이미지 대체할 요소 고려 필요!
  */
 const ImageGenerator = ({ MIN_LENGTH, classList, content, image, setImage }) => {
-  const accessToken = localStorage.getItem('accessToken');
   const baseURL = useRecoilValue(baseURLState);
   const handleError = useHandleError();
 
@@ -45,6 +44,7 @@ const ImageGenerator = ({ MIN_LENGTH, classList, content, image, setImage }) => 
       const requestData = {
         prompt: content,
       };
+      const accessToken = localStorage.getItem('accessToken');
       const response = await axios.post(`${baseURL}/api/generate-image`, requestData, {
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json; charset=UTF-8' },
         withCredentials: true,
@@ -57,28 +57,28 @@ const ImageGenerator = ({ MIN_LENGTH, classList, content, image, setImage }) => 
       }
       // 생성된 이미지 선택지 제공
       setOptions(censoredOptions);
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
       setImage(null);
       setIsGenerating(false);
       setOptions(null);
-      if (error.response && error.response.status === 401) {
-        navigate('/login');
-      } else {
-        Swal.fire({
-          icon: 'error',
-          text: '오류가 발생했습니다. 이미지를 다시 생성해주세요.',
-        });
-      }
+      Swal.fire({
+        icon: 'error',
+        text: '오류가 발생했습니다. 다시 시도해주세요.',
+      });
     }
   }
 
   // 이미지 재생성 버튼, 기존의 이미지와 선택지들 초기화한 후에 생성
   async function imgRegenerator() {
-    setImage(null);
-    setOptions(null);
-    setSelected(null);
-    await handleImgGenerator();
+    try {
+      setImage(null);
+      setOptions(null);
+      setSelected(null);
+      await handleImgGenerator();
+    } catch {
+      handleError();
+    }
   }
 
   const handleSelected = (i) => {
@@ -103,7 +103,7 @@ const ImageGenerator = ({ MIN_LENGTH, classList, content, image, setImage }) => 
   if (image) {
     return (
       <div className={`${classList} relative rounded-lg`}>
-        <button onClick={() => imgRegenerator()} className="z-1 absolute right-6 top-6">
+        <button onClick={() => imgRegenerator()} className="absolute z-1 right-6 top-6">
           {LargeRegeneratorIcon}
         </button>
         <img src={image}></img>
@@ -114,7 +114,7 @@ const ImageGenerator = ({ MIN_LENGTH, classList, content, image, setImage }) => 
   if (options) {
     return (
       <div className={`${classList}`}>
-        <p className="my-3 text-center text-xl font-bold">그림을 선택하세요</p>
+        <p className="my-3 text-lg text-center">그림을 선택하세요</p>
         <div className="grid grid-cols-2">
           {options.map((img, idx) => (
             <div
@@ -129,9 +129,9 @@ const ImageGenerator = ({ MIN_LENGTH, classList, content, image, setImage }) => 
                 key={idx}
               ></img>
               {selected == idx ? (
-                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black bg-opacity-50 text-white">
+                <div className="absolute inset-0 flex items-center justify-center text-white bg-black bg-opacity-50 rounded-lg">
                   <button
-                    className="rounded-full bg-primary-500 px-3 py-1 text-white"
+                    className="px-3 py-1 text-white rounded-full bg-primary-500"
                     onClick={() => {
                       handleImage(idx);
                     }}
@@ -143,7 +143,7 @@ const ImageGenerator = ({ MIN_LENGTH, classList, content, image, setImage }) => 
             </div>
           ))}
         </div>
-        <div className="my-3 flex justify-around">
+        <div className="flex justify-around my-3">
           <button onClick={() => imgRegenerator()}>{LargeRegeneratorIcon}</button>
         </div>
       </div>
@@ -165,9 +165,10 @@ const ImageGenerator = ({ MIN_LENGTH, classList, content, image, setImage }) => 
   return (
     <button
       onClick={() => handleImgGenerator()}
-      className="my-2 w-full flex-row items-center justify-center rounded-lg bg-primary-500 p-4"
+      className="flex-row items-center justify-center w-full p-4 my-2 rounded-lg bg-primary-500"
     >
-      <img className="inline-block h-20 w-20" src="../src/assets/img_generator.png" alt="이미지 생성하기"></img>
+      <img className="inline-block w-20 h-20" src={imgGenerator} alt="이미지 생성하기"/>
+
       <p className="py-2 font-bold">꿈 이미지 생성하기</p>
     </button>
   );

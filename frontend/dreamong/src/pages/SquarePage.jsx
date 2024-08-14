@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -21,9 +21,18 @@ const SquarePage = () => {
       confirmButtonText: '돌아가기',
     });
   };
+  const mainRef = useRef(null);
+  const ScrollToDiv = () => {
+    // 참조된 div가 있으면 그 위치로 스크롤 이동
+    if (mainRef.current) {
+      mainRef.current.scrollIntoView({ behavior: 'smooth' });
+      console.log(window.scrollY);
+    }
+  };
 
   const accessToken = localStorage.getItem('accessToken');
   useEffect(() => {
+    ScrollToDiv();
     // 토큰이 없으면 로그인페이지로 이동
     if (!accessToken) return navigate('/login');
     // 토큰이 존재하면 fatchDreams 실행
@@ -34,6 +43,7 @@ const SquarePage = () => {
     try {
       const response = await axios.get(`${baseURL}/square/dreams`, {
         headers: { Authorization: `Bearer ${accessToken}` },
+        withCredentials: true,
         params: {
           cursorId: cursorId,
           size: size,
@@ -64,7 +74,7 @@ const SquarePage = () => {
   };
 
   return (
-    <div className="h-screen bg-[#222222] p-6">
+    <div ref={mainRef} className="h-screen bg-[#222222] p-6">
       <InfiniteScroll
         dataLength={dreams.length}
         next={fetchDreams}

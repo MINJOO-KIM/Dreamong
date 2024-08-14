@@ -65,6 +65,7 @@ const InterpretationBox = ({
 
       const response = await axios.post(`${baseURL}/api/generate-interpretation`, requestData, {
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json; charset=UTF-8' },
+        withCredentials: true,
       });
 
       setInterpretation(response.data.data);

@@ -13,6 +13,8 @@ import axios from 'axios';
 // 앱 내부의 컴포넌트/아이콘
 import { useHandleError } from '../../../utils/utils';
 import { LargeLoadingSpinner, LargeRegeneratorIcon } from '../../../assets/icons';
+import imgGenerator from '../../../assets/img_generator.png';
+import censoredImage from '../../../assets/censoredImg.png';
 
 /** - 이미지 생성 오류 발생시 현재위치
  * - 검열이미지 대체할 요소 고려 필요!
@@ -45,6 +47,7 @@ const ImageGenerator = ({ MIN_LENGTH, classList, content, image, setImage }) => 
       };
       const response = await axios.post(`${baseURL}/api/generate-image`, requestData, {
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json; charset=UTF-8' },
+        withCredentials: true,
       });
 
       // 검열된 이미지 존재시에 그만큼 공백 추가
@@ -121,8 +124,8 @@ const ImageGenerator = ({ MIN_LENGTH, classList, content, image, setImage }) => 
               {/* 이미지가 존재하면 표시, 검열된 이미지면 다른 이미지 렌더링 */}
               <img
                 onClick={() => handleSelected(idx)}
-                className={`block h-full w-full rounded-lg ${img ? null : 'opacity-50'}`}
-                src={img ? img : '/src/assets/censoredImg.png'}
+                className={`block h-full w-full rounded-lg`}
+                src={img ? img : censoredImage}
                 key={idx}
               ></img>
               {selected == idx ? (

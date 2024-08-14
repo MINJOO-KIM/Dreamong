@@ -70,8 +70,18 @@ const DreamRegisterPage = () => {
   // 날짜의 형식을 변경해야하므로 함수 설정 후에 변수 선언
   const [date, setDate] = useState(replaceDateType(new Date()));
 
+  const mainRef = useRef(null);
+  const ScrollToDiv = () => {
+    // 참조된 div가 있으면 그 위치로 스크롤 이동
+    if (mainRef.current) {
+      mainRef.current.scrollIntoView({ behavior: 'smooth' });
+      console.log(window.scrollY);
+    }
+  };
+
   /** 초기 렌더링시에 accessToken 존재 유무 파악 후 없으면 redirect to login page*/
   useEffect(() => {
+    ScrollToDiv();
     if (!accessToken) {
       navigate('/login');
     }
@@ -141,6 +151,7 @@ const DreamRegisterPage = () => {
         },
         {
           headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json; charset=UTF-8' },
+          withCredentials: true,
         },
       );
       console.log(response.data);
@@ -153,14 +164,6 @@ const DreamRegisterPage = () => {
       } else {
         navigate('/error');
       }
-    }
-  };
-  const mainRef = useRef(null);
-  const ScrollToDiv = () => {
-    // 참조된 div가 있으면 그 위치로 스크롤 이동
-    if (mainRef.current) {
-      mainRef.current.scrollIntoView({ behavior: 'smooth' });
-      console.log(window.scrollY);
     }
   };
 

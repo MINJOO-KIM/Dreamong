@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import Modal from 'react-modal';
 import Button from '../../components/Button';
@@ -148,7 +148,7 @@ const StreamingPage = () => {
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={toggleModalIsOpen}
-        className="fixed left-8 right-8 top-12 z-50"
+        className="fixed z-50 left-8 right-8 top-12"
         overlayClassName="fixed inset-0 bg-black transition-opacity duration-300 ease-in-out"
         closeTimeoutMS={300}
         style={{
@@ -163,13 +163,13 @@ const StreamingPage = () => {
             modalContentVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
           }`}
         >
-          <h2 className="mb-4 text-center text-2xl font-bold">취침모드 설정</h2>
+          <h2 className="mb-4 text-2xl font-bold text-center">취침모드 설정</h2>
           <input
             type="time"
             name="sleepTime"
             id="sleepTime"
             defaultValue={sleepTime}
-            className="mb-4 h-10 w-full appearance-none text-lg"
+            className="w-full h-10 mb-4 text-lg appearance-none"
           />
           <div className="flex justify-end">
             <Button type="button" variant="secondary" size="md" onClick={toggleModalIsOpen} className="mx-2">
@@ -182,7 +182,7 @@ const StreamingPage = () => {
         </form>
       </Modal>
 
-      <section className="mb-2 flex justify-end">
+      <section className="flex justify-end mb-2">
         {location.pathname !== '/streaming' && (
           <Button size="md" className="mr-auto text-white hover:text-gray-400" onClick={() => navigate('/streaming')}>
             <img src={back} alt="뒤로가기" className="w-[21px]" />

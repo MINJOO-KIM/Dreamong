@@ -30,6 +30,18 @@ const StatisticsPage = () => {
   const accessToken = localStorage.getItem('accessToken');
   const navigate = useNavigate();
 
+  const mainRef = useRef(null)
+  const ScrollToDiv = () => {
+    // 참조된 div가 있으면 그 위치로 스크롤 이동
+    if (mainRef.current) {
+      mainRef.current.scrollIntoView({ behavior: 'smooth' });
+      console.log(window.scrollY);
+    }
+  };
+  useEffect(() =>{
+    ScrollToDiv()
+  })
+
   useEffect(() => {
     fetchStatistics();
   }, [currentDate]);
@@ -144,15 +156,15 @@ const StatisticsPage = () => {
   };
 
   return (
-    <div className="flex h-full w-full flex-col justify-center bg-[#3a3a3a]">
+    <div ref={mainRef} className="flex h-full w-full flex-col justify-center bg-[#3a3a3a]">
       <div className="flex h-full w-full max-w-md flex-col justify-start bg-[#3a3a3a]">
         {/* 안내 문구 */}
-        <div className="mx-8 mt-10 flex h-16 w-full flex-col gap-1 text-xl text-white">
+        <div className="flex flex-col w-full h-16 gap-1 mx-8 mt-10 text-xl text-white">
           <p>{user.nickname}님의 꿈 속에서</p>
           <p>일어난 일을 분석해봤어요</p>
         </div>
         {/* 월별 선택 */}
-        <div className="mx-8 mt-4 flex space-x-2">
+        <div className="flex mx-8 mt-4 space-x-2">
           <select
             value={yearMonth}
             onChange={handleYearMonthChange}
@@ -176,7 +188,7 @@ const StatisticsPage = () => {
             {objects.length > 0 ? (
               objects.map((object, index) => (
                 <div key={index} className="">
-                  <div className="h-full w-full rounded-3xl border-black bg-tag-gradient p-4">
+                  <div className="w-full h-full p-4 border-black rounded-3xl bg-tag-gradient">
                     <div className="flex">
                       <p>{index + 1}위 </p>
                       <p className="px-2 font-bold">{object.word}</p>
@@ -190,13 +202,13 @@ const StatisticsPage = () => {
             )}
           </div>
 
-          <div className="mt-6 flex w-full justify-around gap-x-4">
+          <div className="flex justify-around w-full mt-6 gap-x-4">
             {/* 인물 */}
             <div className="h-40 w-40 rounded-3xl bg-[#E3DEFF]">
-              <p className="text-md mb-4 mt-6 text-center">누가 자주 나왔을까요?</p>
+              <p className="mt-6 mb-4 text-center text-md">누가 자주 나왔을까요?</p>
               {characters.length > 0 ? (
                 characters.map((character, index) => (
-                  <div key={index} className="text-center text-sm text-black">
+                  <div key={index} className="text-sm text-center text-black">
                     <div className="flex justify-center align-middle">
                       <p>{index + 1}위</p>
                       <p className="px-2 font-bold">{character.word}</p>
@@ -204,7 +216,7 @@ const StatisticsPage = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-bold mt-3 items-center text-center text-gray-500">
+                <p className="items-center mt-3 text-center text-gray-500 text-bold">
                   이번달에 분석된 <br />
                   키워드가 없습니다.
                 </p>
@@ -212,7 +224,7 @@ const StatisticsPage = () => {
             </div>
             {/* 장소 */}
             <div className="h-40 w-40 rounded-3xl bg-[#36258D] text-center">
-              <p className="text-md mb-4 mt-6 text-white">자주 간 장소예요!</p>
+              <p className="mt-6 mb-4 text-white text-md">자주 간 장소예요!</p>
               {locations.length > 0 ? (
                 locations.map((location, index) => (
                   <div key={index} className="text-sm text-white">
@@ -223,7 +235,7 @@ const StatisticsPage = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-bold mt-3 items-center text-center text-gray-500">
+                <p className="items-center mt-3 text-center text-gray-500 text-bold">
                   이번달에 분석된 <br />
                   키워드가 없습니다.
                 </p>
@@ -236,12 +248,12 @@ const StatisticsPage = () => {
             <div className="flex flex-wrap justify-center">
               {moods.length > 0 ? (
                 moods.slice(0, 10).map((mood, index) => (
-                  <div key={index} className="mx-1 my-2 flex rounded-3xl bg-tag-gradient px-4 py-2 shadow-md">
-                    <div className="flex w-full justify-center align-middle">{mood.word}</div>
+                  <div key={index} className="flex px-4 py-2 mx-1 my-2 shadow-md rounded-3xl bg-tag-gradient">
+                    <div className="flex justify-center w-full align-middle">{mood.word}</div>
                   </div>
                 ))
               ) : (
-                <p className="text-bold mt-3 items-center text-center text-gray-500">
+                <p className="items-center mt-3 text-center text-gray-500 text-bold">
                   이번달에 분석된 <br />
                   키워드가 없습니다.
                 </p>
@@ -251,8 +263,8 @@ const StatisticsPage = () => {
 
           {/* 꿈종류 그래프 */}
           <div className="h-70 mt-6 flex w-full flex-col justify-center gap-4 rounded-3xl bg-[white] p-2.5">
-            <div className="text-md mt-4 flex justify-center">이번달에 꾼 꿈 종류예요</div>
-            <canvas ref={chartRef} className="mb-4 h-full w-full" />
+            <div className="flex justify-center mt-4 text-md">이번달에 꾼 꿈 종류예요</div>
+            <canvas ref={chartRef} className="w-full h-full mb-4" />
           </div>
         </div>
       )}

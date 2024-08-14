@@ -106,6 +106,12 @@ const SettingsPage = () => {
   // 닉네임 변경사항 저장
   const handleNicknameSave = (event) => {
     event.preventDefault();
+
+    if (newNickname.length < 1) {
+      alert('닉네임은 1글자 이상이어야 합니다.');
+      return;
+    }
+
     axios({
       method: 'patch',
       url: `${baseURL}/users/nickname`,
@@ -113,7 +119,7 @@ const SettingsPage = () => {
         Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
       },
       data: {
-        nickname: newNickname,
+        nickname: newNickname.trim(),
       },
     })
       .then((response) => {
@@ -174,7 +180,7 @@ const SettingsPage = () => {
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={toggleModalIsOpen}
-        className="fixed z-50 left-8 right-8 top-12"
+        className="fixed left-8 right-8 top-12 z-50"
         overlayClassName="fixed inset-0 bg-black transition-opacity duration-300 ease-in-out"
         closeTimeoutMS={300}
         style={{
@@ -188,7 +194,7 @@ const SettingsPage = () => {
             modalContentVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
           }`}
         >
-          <h2 className="mb-4 text-2xl font-bold text-center">닉네임 변경</h2>
+          <h2 className="mb-4 text-center text-2xl font-bold">닉네임 변경</h2>
           <input
             type="text"
             name="nickname"
@@ -207,10 +213,10 @@ const SettingsPage = () => {
         </div>
       </Modal>
 
-      <h1 className="mt-20 mb-20 text-3xl text-center text-white">환경 설정</h1>
+      <h1 className="mb-20 mt-20 text-center text-3xl text-white">환경 설정</h1>
       <div className="fixed h-full w-full max-w-[600px] overflow-auto rounded-t-2xl bg-white p-6">
         {!isLogin && (
-          <div className="flex items-center justify-between h-10 mb-8">
+          <div className="mb-8 flex h-10 items-center justify-between">
             <p>로그인</p>
             <Link to="/login">
               <img src={login} alt="[login]" />
@@ -219,7 +225,7 @@ const SettingsPage = () => {
         )}
         {isLogin && (
           <>
-            <div className="flex items-center justify-between h-10 mb-8">
+            <div className="mb-8 flex h-10 items-center justify-between">
               <p>로그아웃</p>
               <form onSubmit={handleLogout}>
                 <Button type="submit" size="sm">
@@ -227,7 +233,7 @@ const SettingsPage = () => {
                 </Button>
               </form>
             </div>
-            <div className="flex items-center justify-between h-10 mb-8">
+            <div className="mb-8 flex h-10 items-center justify-between">
               <p>닉네임 변경</p>
               <Button size="sm" onClick={toggleModalIsOpen}>
                 <img src={user} alt="[modify nickname]" />
@@ -245,11 +251,11 @@ const SettingsPage = () => {
           </label>
         </div> */}
         {isLogin && (
-          <div className="flex items-center justify-between h-10 mb-8">
+          <div className="mb-8 flex h-10 items-center justify-between">
             <p>푸시 알림 활성화</p>
-            <label className="flex items-center justify-between cursor-pointer">
+            <label className="flex cursor-pointer items-center justify-between">
               <div>
-                <input type="checkbox" checked={isPushEnabled} onChange={handlePushToggle} className="sr-only peer" />
+                <input type="checkbox" checked={isPushEnabled} onChange={handlePushToggle} className="peer sr-only" />
                 <div className="peer relative h-6 w-11 rounded-full bg-gray-200 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none rtl:peer-checked:after:-translate-x-full"></div>
               </div>
             </label>

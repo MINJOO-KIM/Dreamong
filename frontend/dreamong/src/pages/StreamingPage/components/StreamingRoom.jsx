@@ -7,8 +7,6 @@ import io from 'socket.io-client';
 import { useRecoilValue } from 'recoil';
 import { userState, baseURLState, socketURLState } from '../../../recoil/atoms';
 
-import sendImg from '../../../assets/send.svg';
-
 const StreamingRoom = () => {
   const navigate = useNavigate();
 
@@ -51,11 +49,12 @@ const StreamingRoom = () => {
     fetchRoomInfo();
 
     const newSocket = io(socketURL, {
-      transports: ['websocket'],
-      upgrade: false,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      timeout: 1000,
+      // transports: ['websocket'],
+      // upgrade: false,
+      // reconnection: true,
+      // reconnectionAttempts: 5,
+      // timeout: 1000,
+      secure: true
     });
     setSocket(newSocket);
 
@@ -110,7 +109,7 @@ const StreamingRoom = () => {
     if (messageContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = messageContainerRef.current;
       // 스크롤이 맨 아래에 있는지 확인
-      const isScrolledToBottom = scrollHeight - scrollTop - clientHeight < 1;
+      const isScrollecToBottom = scrollHeight - scrollTop - clientHeight < 1;
       // 스크롤 위치에 따라 자동 스크롤 상태 업데이트
       setShouldAutoScroll(isScrolledToBottom);
     }
@@ -157,7 +156,7 @@ const StreamingRoom = () => {
     <section className="mx-2 flex h-[calc(100dvh-130px)] flex-col">
       <div className="mb-5">
         {/* YouTube 플레이어 */}
-        <div className="my-3 w-full overflow-hidden rounded-md bg-slate-600 text-white">
+        <div className="w-full my-3 overflow-hidden text-white rounded-md bg-slate-600">
           <div className="relative pt-[56.25%]">
             <YouTube
               videoId={videoId}
@@ -172,23 +171,22 @@ const StreamingRoom = () => {
                   loop: 1,
                   rel: 0,
                   modestbranding: 1,
-                  origin: 'https://i11c106.p.ssafy.io',
                 },
               }}
               onReady={onReady}
-              className="absolute left-0 top-0 h-full w-full touch-none select-none"
+              className="absolute top-0 left-0 w-full h-full select-none touch-none"
             />
           </div>
         </div>
         {/* 방 정보 표시 */}
-        <div className="flex w-full justify-between text-white">
+        <div className="flex justify-between w-full text-white">
           <p>{roomInfo.title}</p>
           <p>{roomInfo.participantCount}명 시청중</p>
         </div>
       </div>
       {/* 채팅 메시지 표시 영역 */}
       <div
-        className="flex flex-grow flex-col overflow-hidden rounded-t-lg border-b-2 border-gray-500 bg-black bg-opacity-50 backdrop-blur-sm backdrop-filter"
+        className="flex flex-col flex-grow overflow-hidden bg-black bg-opacity-50 border-b-2 border-gray-500 rounded-t-lg backdrop-blur-sm backdrop-filter"
         ref={messageContainerRef}
         onScroll={handleScroll}
       >
@@ -205,18 +203,18 @@ const StreamingRoom = () => {
         </div>
       </div>
       {/* 채팅 입력 영역 */}
-      <div className="flex rounded-b-lg bg-gray-700">
+      <div className="flex bg-gray-700 rounded-b-lg">
         <input
           type="text"
           value={inputMessage}
           onChange={(event) => setInputMessage(event.target.value)}
           onKeyDown={(event) => event.key === 'Enter' && sendMessage()}
-          className="flex-grow appearance-none bg-transparent p-2 text-white"
+          className="flex-grow p-2 text-white bg-transparent appearance-none"
           placeholder="메시지를 입력하세요..."
           aria-label="채팅 메시지 입력"
         />
-        <button onClick={sendMessage} className="rounded-br-md bg-primary-500 p-3 text-white" aria-label="메시지 전송">
-          <img src={sendImg} />
+        <button onClick={sendMessage} className="p-3 text-white rounded-br-md bg-primary-500" aria-label="메시지 전송">
+          전송
         </button>
       </div>
     </section>
